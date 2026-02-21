@@ -13,7 +13,6 @@ Slides are available: TODO
 This demo covers
 - Pure Random
 - Perlin Noise 
-- Cellular Automata
 - Agent Based Random Walk
 - Wave Function Collapse
 
