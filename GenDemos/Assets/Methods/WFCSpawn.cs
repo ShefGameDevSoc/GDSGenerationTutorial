@@ -7,16 +7,10 @@ namespace DefaultNamespace
     //Thanks to chatGPT for this, I CBA to implement WFC from scratch AGAIN
     //Works well enough for the demo
     
-    /// <summary>
-    /// WFC dungeon silhouette generator.
-    /// Tiles describe OUTSIDE exposure only.
-    /// Produces continuous dungeon interiors with closed borders.
-    /// </summary>
     public static class BoundaryWFCSpawn
     {
         private const int SIZE = 64;
-
-        #region Tile Definition
+        
 
         private struct BoundaryTile
         {
@@ -60,12 +54,11 @@ namespace DefaultNamespace
             1f,1f,1f,1f,
             0.2f
         };
+        
+        static List<int>[,] wave = new List<int>[SIZE, SIZE];
+        
 
-        #endregion
-
-        #region Public Entry
-
-        public static Occupancy[,] Run(float insideWeight)
+        public static Occupancy[,] Setup(float insideWeight)
         {
             float[] LocalWeights =
             {
@@ -77,7 +70,7 @@ namespace DefaultNamespace
         
             Weights = LocalWeights;
             
-            List<int>[,] wave = new List<int>[SIZE, SIZE];
+            
 
             // Initialize superposition
             for (int x = 0; x < SIZE; x++)
@@ -90,23 +83,40 @@ namespace DefaultNamespace
 
                 ApplyBorderConstraints(wave[x, y], x, y);
             }
-
-            // Collapse
-            while (true)
-            {
-                Vector2Int cell = FindLowestEntropy(wave);
-                if (cell.x < 0) break;
-
-                Collapse(wave, cell);
-                Propagate(wave, cell);
-            }
+            
+            Worker();
 
             return ConvertToOccupancy(wave);
         }
 
-        #endregion
+        static bool Worker()
+        {
+            Vector2Int cell = FindLowestEntropy(wave);
+            if (cell.x < 0) return false;
 
-        #region WFC Core
+            Collapse(wave, cell);
+            Propagate(wave, cell);
+
+            return true;
+        }
+
+        public static Occupancy[,] RunOnce()
+        {
+            Worker();
+            return ConvertToOccupancy(wave);
+        }
+
+        public static Occupancy[,] RunToEnd()
+        {
+            while (true)
+            {
+                if (!Worker()) break;
+            }
+
+            return ConvertToOccupancy(wave);
+        }
+        
+        
 
         private static Vector2Int FindLowestEntropy(List<int>[,] wave)
         {
@@ -203,10 +213,6 @@ namespace DefaultNamespace
             }
         }
 
-        #endregion
-
-        #region Rules
-
         private static bool Compatible(BoundaryTile a, BoundaryTile b, Vector2Int dir)
         {
             if (dir == Vector2Int.up) return a.N == b.S;
@@ -216,10 +222,7 @@ namespace DefaultNamespace
 
             return false;
         }
-
-        #endregion
-
-        #region Conversion
+        
 
         private static Occupancy[,] ConvertToOccupancy(List<int>[,] wave)
         {
@@ -244,10 +247,7 @@ namespace DefaultNamespace
 
             return result;
         }
-
-        #endregion
-
-        #region Helpers
+        
 
         private static void ApplyBorderConstraints(List<int> options, int x, int y)
         {
@@ -267,7 +267,6 @@ namespace DefaultNamespace
             return p.x >= 0 && p.y >= 0 &&
                    p.x < SIZE && p.y < SIZE;
         }
-
-        #endregion
+        
     }
 }
