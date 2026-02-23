@@ -7,7 +7,7 @@ This project demonstrates various generation techniques that can be used for pro
 
 Hosted webGL version available: [here](https://int.jeynes.uk/GDS/GenDemos/)
 
-Slides are available: TODO
+Slides are available: [here](Presentation.pdf)
 
 ### Algorithms Implemented
 This demo covers
